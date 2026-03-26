@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { db } from "../firebase";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
-import { X, ChevronLeft, ChevronRight, Calendar, MapPin, Star, Phone, ShieldCheck } from "lucide-react";
+import { db, auth } from "../firebase";
+import { collection, getDocs, query, orderBy, where, doc, setDoc, deleteDoc } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
+import { X, ChevronLeft, ChevronRight, Calendar, MapPin, Star, Phone, ShieldCheck, Heart } from "lucide-react";
 import BookingModal from "../Components/BookingModal";
 import FilterPanel from "../Components/FilterPanel";
 import ImageSlider from "../Components/ImageSlider";
@@ -26,6 +27,24 @@ export default function FindSpacePage() {
     budget: "",
     searchTerm: ""
   });
+  const [user, setUser] = useState(null);
+  const [favorites, setFavorites] = useState([]);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        const q = query(collection(db, "favorites"), where("userId", "==", currentUser.uid));
+        const snap = await getDocs(q);
+        const favIds = snap.docs.map(doc => doc.data().spaceId);
+        setFavorites(favIds);
+      } else {
+        setFavorites([]);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const fetchSpaces = async () => {
@@ -128,6 +147,34 @@ export default function FindSpacePage() {
     return parseFloat(space.price) <= parseFloat(filters.budget);
   };
 
+  const toggleFavorite = async (spaceId) => {
+    if (!user) {
+      alert("Please login to save spaces!");
+      return;
+    }
+
+    try {
+      const isFav = favorites.includes(spaceId);
+      if (isFav) {
+        setFavorites(prev => prev.filter(id => id !== spaceId));
+        const q = query(collection(db, "favorites"), where("userId", "==", user.uid), where("spaceId", "==", spaceId));
+        const snap = await getDocs(q);
+        snap.forEach(async (d) => {
+          await deleteDoc(doc(db, "favorites", d.id));
+        });
+      } else {
+        setFavorites(prev => [...prev, spaceId]);
+        await setDoc(doc(collection(db, "favorites")), {
+          userId: user.uid,
+          spaceId: spaceId,
+          createdAt: new Date()
+        });
+      }
+    } catch (err) {
+      console.error("Error toggling favorite", err);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 px-6 py-12 font-sans mt-16 animate-slide-up-fade">
       <div className="max-w-7xl mx-auto">
@@ -183,15 +230,30 @@ export default function FindSpacePage() {
               >
                 {/* Budget Badge */}
                 {isWithinBudget(space) && (
-                  <div className="absolute top-4 left-4 z-10 bg-emerald-500 text-white px-3 py-1.5 rounded-full text-xs font-bold flex items-center shadow-sm">
+                  <div className="absolute top-4 left-4 z-20 bg-emerald-500 text-white px-3 py-1.5 rounded-full text-xs font-bold flex items-center shadow-sm pointer-events-none">
                     <Star size={14} className="mr-1 fill-current" />
                     Within Budget
                   </div>
                 )}
 
                 {/* LEFT SIDE - IMAGES */}
-                <div className="lg:w-1/3 h-64 lg:h-auto bg-gray-100 relative">
+                <div className="lg:w-1/3 h-64 lg:h-auto bg-gray-100 relative group/slider">
                   <ImageSlider images={space.images || []} onExpand={(images, index) => openPopup(images, index)} />
+                  
+                  {/* Heart Button Overlay */}
+                  <div className={`absolute z-20 ${isWithinBudget(space) ? 'top-14 left-4' : 'top-4 left-4'}`}>
+                    <button
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(space.id); }}
+                      className={`p-2.5 rounded-full shadow-md backdrop-blur-md transition-all ${
+                        favorites.includes(space.id) 
+                          ? "bg-rose-50 text-rose-500 hover:bg-rose-100" 
+                          : "bg-white/80 text-gray-400 hover:bg-white hover:text-rose-500 hover:scale-110"
+                      }`}
+                      title={favorites.includes(space.id) ? "Remove from Favorites" : "Save to Favorites"}
+                    >
+                      <Heart size={20} className={favorites.includes(space.id) ? "fill-rose-500" : ""} />
+                    </button>
+                  </div>
                 </div>
 
                 {/* RIGHT SIDE - DETAILS */}

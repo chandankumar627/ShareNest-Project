@@ -5,7 +5,7 @@ import { auth, db } from "../firebase";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { useRouter } from "next/navigation";
-import { User, Mail, Phone, MapPin, Fingerprint, Camera, Edit2, ShieldCheck, Loader2, ArrowRight } from "lucide-react";
+import { User, Mail, Phone, MapPin, Fingerprint, Camera, Edit2, ShieldCheck, Loader2, ArrowRight, X, QrCode } from "lucide-react";
 
 export default function ProfilePage() {
   const [showForm, setShowForm] = useState(false);
@@ -20,6 +20,7 @@ export default function ProfilePage() {
     address: "",
     aadhar: "",
     profile: "",
+    upiId: "",
   });
 
   const router = useRouter();
@@ -36,7 +37,10 @@ export default function ProfilePage() {
           if (snap.exists()) {
             const data = snap.data();
             setProfile(data);
-            setFormData({ ...data, email: currentUser.email });
+            setFormData({ 
+              name: "", email: currentUser.email, phone: "", address: "", aadhar: "", profile: "", upiId: "", 
+              ...data 
+            });
           } else {
             setFormData((prev) => ({ ...prev, email: currentUser.email }));
           }
@@ -53,6 +57,7 @@ export default function ProfilePage() {
           address: "",
           aadhar: "",
           profile: "",
+          upiId: "",
         });
       }
       setLoading(false);
@@ -199,6 +204,7 @@ export default function ProfilePage() {
               <Input icon={<Phone size={18} />} name="phone" value={formData.phone} onChange={handleChange} placeholder="e.g. +91 9876543210" label="Phone Number" />
               <Input icon={<MapPin size={18} />} name="address" value={formData.address} onChange={handleChange} placeholder="Street, City, State" label="Address" />
               <Input icon={<Fingerprint size={18} />} name="aadhar" value={formData.aadhar} onChange={handleChange} placeholder="12 Digit Aadhar Number" label="Aadhar ID" />
+              <Input icon={<QrCode size={18} />} name="upiId" value={formData.upiId} onChange={handleChange} placeholder="e.g. yourname@okbank" label="UPI ID (For Payments)" />
               <Input icon={<Camera size={18} />} name="profile" value={formData.profile} onChange={handleChange} placeholder="https://example.com/photo.jpg" label="Profile Photo URL" />
               
               <div className="pt-4 flex gap-3">

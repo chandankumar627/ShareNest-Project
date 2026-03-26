@@ -2,15 +2,17 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
-import { auth } from "../firebase";
+import { Menu, X, Bell, Heart } from "lucide-react";
+import { auth, db } from "../firebase";
 import { onAuthStateChanged, signOut } from "firebase/auth";
+import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 
 const navLinks = [
   { name: "Home", path: "/home" },
   { name: "My Posted Spaces", path: "/my-spaces" },
   { name: "My Bookings", path: "/bookings" },
+  { name: "Saved Spaces", path: "/saved" },
   { name: "About", path: "/about" },
   { name: "Profile", path: "/profile" }
 ];
@@ -18,15 +20,52 @@ const navLinks = [
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [notifCounts, setNotifCounts] = useState({ incoming: 0, negotiating: 0, accepted: 0 });
   const router = useRouter();
 
   useEffect(() => {
+    let unsubs = [];
+
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      
+      unsubs.forEach(unsub => unsub());
+      unsubs = [];
+
+      if (currentUser) {
+        // Listener 1: Actionable incoming requests (Host)
+        const q1 = query(collection(db, "bookingRequests"), where("spaceOwnerId", "==", currentUser.uid), where("status", "==", "pending"));
+        const unsub1 = onSnapshot(q1, (snap) => {
+          setNotifCounts(prev => ({ ...prev, incoming: snap.size }));
+        });
+        unsubs.push(unsub1);
+
+        // Listener 2: Actionable outgoing requests (Guest negotiating)
+        const q2 = query(collection(db, "bookingRequests"), where("requesterId", "==", currentUser.uid), where("status", "==", "negotiating"));
+        const unsub2 = onSnapshot(q2, (snap) => {
+          setNotifCounts(prev => ({ ...prev, negotiating: snap.size }));
+        });
+        unsubs.push(unsub2);
+
+        // Listener 3: Actionable outgoing requests (Guest accepted)
+        const q3 = query(collection(db, "bookingRequests"), where("requesterId", "==", currentUser.uid), where("status", "==", "accepted"));
+        const unsub3 = onSnapshot(q3, (snap) => {
+          setNotifCounts(prev => ({ ...prev, accepted: snap.size }));
+        });
+        unsubs.push(unsub3);
+      } else {
+        setNotifCounts({ incoming: 0, negotiating: 0, accepted: 0 });
+      }
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      unsubs.forEach(unsub => unsub());
+    };
   }, []);
+
+  const totalNotifs = notifCounts.incoming + notifCounts.negotiating + notifCounts.accepted;
+  const hasNotifications = totalNotifs > 0;
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -53,6 +92,23 @@ const Header = () => {
               {link.name}
             </Link>
           ))}
+
+          {user && (
+            <div className="flex items-center ml-2 space-x-1 border-l border-gray-200 pl-4">
+              <Link href="/saved" className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-colors relative group" title="Saved Spaces">
+                <Heart size={20} className="group-hover:fill-rose-50" />
+              </Link>
+              <Link href="/bookings" className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors relative group" title="Notifications">
+                <Bell size={20} className="group-hover:fill-indigo-50" />
+                {hasNotifications && (
+                  <span className="absolute top-1.5 right-1.5 flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500 border-2 border-white shadow-sm"></span>
+                  </span>
+                )}
+              </Link>
+            </div>
+          )}
 
           {user ? (
             <button

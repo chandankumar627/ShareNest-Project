@@ -11,7 +11,8 @@ import {
   doc, 
   updateDoc,
   addDoc,
-  serverTimestamp 
+  serverTimestamp,
+  getDoc 
 } from "firebase/firestore";
 import { 
   Calendar, 
@@ -24,7 +25,9 @@ import {
   User,
   MapPin,
   ChevronRight,
-  Send
+  Send,
+  QrCode,
+  Check
 } from "lucide-react";
 
 export default function BookingsPage() {
@@ -35,6 +38,9 @@ export default function BookingsPage() {
   const [negotiationModal, setNegotiationModal] = useState(null);
   const [counterOffer, setCounterOffer] = useState("");
   const [negotiationMessage, setNegotiationMessage] = useState("");
+  const [paymentModal, setPaymentModal] = useState(null);
+  const [hostUpi, setHostUpi] = useState("");
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   useEffect(() => {
     fetchBookings();
@@ -80,6 +86,37 @@ export default function BookingsPage() {
       console.error("Error fetching bookings:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleOpenPayment = async (booking) => {
+    setPaymentModal(booking);
+    setPaymentLoading(true);
+    try {
+      const snap = await getDoc(doc(db, "profile", booking.spaceOwnerId));
+      if (snap.exists() && snap.data().upiId) {
+        setHostUpi(snap.data().upiId);
+      } else {
+        setHostUpi("");
+      }
+    } catch (err) {
+      console.error(err);
+      setHostUpi("");
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
+
+  const markAsPaid = async (bookingId) => {
+    try {
+      await updateDoc(doc(db, "bookingRequests", bookingId), {
+        status: "paid",
+        updatedAt: serverTimestamp()
+      });
+      fetchBookings();
+      setPaymentModal(null);
+    } catch (err) {
+      alert("Error marking as paid");
     }
   };
 
@@ -131,6 +168,7 @@ export default function BookingsPage() {
       case "accepted": return "text-emerald-700 bg-emerald-50 border-emerald-200";
       case "rejected": return "text-red-700 bg-red-50 border-red-200";
       case "negotiating": return "text-indigo-700 bg-indigo-50 border-indigo-200";
+      case "paid": return "text-teal-700 bg-teal-50 border-teal-200";
       default: return "text-gray-700 bg-gray-50 border-gray-200";
     }
   };
@@ -141,6 +179,7 @@ export default function BookingsPage() {
       case "accepted": return <CheckCircle size={16} className="text-emerald-500" />;
       case "rejected": return <XCircle size={16} className="text-red-500" />;
       case "negotiating": return <MessageCircle size={16} className="text-indigo-500" />;
+      case "paid": return <Check size={16} className="text-teal-500" />;
       default: return <AlertCircle size={16} className="text-gray-500" />;
     }
   };
@@ -262,6 +301,17 @@ export default function BookingsPage() {
               className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-red-50 text-red-600 border border-red-200 text-sm font-bold hover:bg-red-100 transition"
             >
               Reject
+            </button>
+          </div>
+        )}
+
+        {isSent && booking.status === "accepted" && (
+          <div className="flex w-full sm:w-auto gap-2">
+            <button
+               onClick={() => handleOpenPayment(booking)}
+               className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-gray-900 text-white text-sm font-bold shadow-sm hover:bg-black transition flex items-center gap-2 justify-center"
+            >
+              <QrCode size={16} /> Pay Now
             </button>
           </div>
         )}
@@ -414,6 +464,68 @@ export default function BookingsPage() {
                   Send Proposal
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Payment Modal */}
+        {paymentModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-slide-up-fade">
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-8 border border-gray-100 relative text-center">
+              <button
+                onClick={() => setPaymentModal(null)}
+                className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 bg-gray-50 p-2 rounded-full transition"
+              >
+                <XCircle size={20} />
+              </button>
+              
+              <div className="bg-teal-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-teal-600">
+                <QrCode size={32} />
+              </div>
+              <h3 className="text-2xl font-black text-gray-900 mb-1">Make Payment</h3>
+              <p className="text-gray-500 mb-6 text-sm">Scan QR with any UPI App</p>
+              
+              {paymentLoading ? (
+                <div className="py-10 flex justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                </div>
+              ) : hostUpi ? (
+                <div className="space-y-6">
+                  <div className="p-4 bg-white border border-gray-200 rounded-2xl shadow-sm inline-block">
+                    <img 
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi%3A%2F%2Fpay%3Fpa%3D${hostUpi}%26pn%3DShareNest%2BHost%26am%3D${paymentModal.counterPrice || paymentModal.proposedPrice || paymentModal.originalPrice}%26cu%3DINR`} 
+                      alt="UPI QR Code" 
+                      className="w-48 h-48 mx-auto"
+                    />
+                  </div>
+                  <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Paying to</p>
+                    <p className="font-semibold text-gray-900 break-all">{hostUpi}</p>
+                    <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center">
+                      <span className="text-sm font-bold text-gray-700">Total Amount:</span>
+                      <span className="text-xl font-black text-indigo-600">₹{paymentModal.counterPrice || paymentModal.proposedPrice || paymentModal.originalPrice}</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => markAsPaid(paymentModal.id)}
+                    className="w-full py-4 rounded-xl bg-teal-600 text-white font-bold hover:bg-teal-700 transition shadow-md flex items-center justify-center gap-2"
+                  >
+                    <Check size={18} /> I have paid
+                  </button>
+                </div>
+              ) : (
+                <div className="py-6 space-y-4">
+                  <AlertCircle size={40} className="mx-auto text-amber-500" />
+                  <p className="text-gray-700 font-semibold">The host has not linked a UPI ID to their profile.</p>
+                  <p className="text-sm text-gray-500">Please contact them to arrange a manual payment.</p>
+                  <button
+                    onClick={() => markAsPaid(paymentModal.id)}
+                    className="w-full py-3.5 mt-4 rounded-xl bg-gray-900 text-white font-bold hover:bg-black transition shadow-sm"
+                  >
+                    Mark as Arranged
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}
