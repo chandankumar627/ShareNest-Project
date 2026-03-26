@@ -4,7 +4,48 @@ import { useState, useEffect } from "react";
 import { db, auth } from "../firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { useRouter } from "next/navigation";
-import { MapPin, Image as ImageIcon, CheckCircle2, Loader2 } from "lucide-react";
+import { MapPin, Image as ImageIcon, CheckCircle2, Loader2, X } from "lucide-react";
+
+const compressImage = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const MAX_WIDTH = 800; // compress dimension limit
+        const MAX_HEIGHT = 800;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Convert to base64 jpeg string (compressed)
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.7);
+        resolve(dataUrl);
+      };
+      img.onerror = (err) => reject(err);
+    };
+    reader.onerror = (err) => reject(err);
+  });
+};
 
 export default function ListSpacePage() {
   const [formData, setFormData] = useState({
@@ -53,39 +94,32 @@ export default function ListSpacePage() {
     }));
   };
 
-  const handleFileChange = (e) => {
-    setFiles(Array.from(e.target.files));
+  const handleFileChange = async (e) => {
+    const selectedFiles = Array.from(e.target.files);
+    if (!selectedFiles.length) return;
+
+    try {
+      const base64Images = await Promise.all(selectedFiles.map(compressImage));
+      setFiles((prev) => [...prev, ...base64Images]);
+    } catch (err) {
+      console.error("Error compressing images", err);
+      alert("Error processing images.");
+    }
+  };
+
+  const removeImage = (indexToRemove) => {
+    setFiles((prev) => prev.filter((_, index) => index !== indexToRemove));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       setLoading(true);
-      let imagePaths = [];
-
-      if (files.length > 0) {
-        const formDataUpload = new FormData();
-        files.forEach((file) => formDataUpload.append("images", file));
-
-        const res = await fetch("/api/upload", {
-          method: "POST",
-          body: formDataUpload,
-        });
-
-        const data = await res.json();
-        if (res.ok) {
-          imagePaths = data.paths;
-        } else {
-          alert("Image upload failed: " + data.error);
-          setLoading(false);
-          return;
-        }
-      }
 
       const user = auth.currentUser;
       await addDoc(collection(db, "spaces"), {
         ...formData,
-        images: imagePaths, // save uploaded image paths
+        images: files, // save compressed base64 strings directly
         createdAt: serverTimestamp(),
         userId: user ? user.uid : null,
         userEmail: user ? user.email : null,
@@ -204,11 +238,14 @@ export default function ListSpacePage() {
           </div>
 
           {files.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {files.map((file, idx) => (
-                <span key={idx} className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
-                  {file.name}
-                </span>
+            <div className="flex flex-wrap gap-4 mt-4">
+              {files.map((base64Str, idx) => (
+                <div key={idx} className="relative w-24 h-24 rounded-xl border border-gray-200 overflow-hidden shadow-sm group">
+                  <img src={base64Str} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
+                  <button type="button" onClick={() => removeImage(idx)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 hover:bg-red-600 transition-all shadow-sm">
+                    <X size={14} />
+                  </button>
+                </div>
               ))}
             </div>
           )}

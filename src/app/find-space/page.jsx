@@ -6,6 +6,7 @@ import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { X, ChevronLeft, ChevronRight, Calendar, MapPin, Star, Phone, ShieldCheck } from "lucide-react";
 import BookingModal from "../Components/BookingModal";
 import FilterPanel from "../Components/FilterPanel";
+import ImageSlider from "../Components/ImageSlider";
 
 export default function FindSpacePage() {
   const [spaces, setSpaces] = useState([]);
@@ -190,25 +191,7 @@ export default function FindSpacePage() {
 
                 {/* LEFT SIDE - IMAGES */}
                 <div className="lg:w-1/3 h-64 lg:h-auto bg-gray-100 relative">
-                  {space.images?.length > 0 ? (
-                    <>
-                      <img
-                        src={space.images[0]}
-                        alt="Space cover"
-                        className="w-full h-full object-cover"
-                      />
-                      {space.images.length > 1 && (
-                        <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-medium cursor-pointer hover:bg-black/80 transition" onClick={() => openPopup(space.images, 0)}>
-                          + {space.images.length - 1} more
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
-                      <MapPin size={48} className="mb-2 opacity-50" />
-                      <span className="text-sm font-medium">No images</span>
-                    </div>
-                  )}
+                  <ImageSlider images={space.images || []} onExpand={(images, index) => openPopup(images, index)} />
                 </div>
 
                 {/* RIGHT SIDE - DETAILS */}

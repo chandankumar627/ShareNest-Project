@@ -11,7 +11,8 @@ import {
   deleteDoc,
   doc,
 } from "firebase/firestore";
-import { MapPin, Bed, Phone, Trash2, Edit3, ExternalLink, Loader2, Home } from "lucide-react";
+import { MapPin, Bed, Phone, Trash2, Edit3, ExternalLink, Loader2, Home, X, ChevronLeft, ChevronRight } from "lucide-react";
+import ImageSlider from "../Components/ImageSlider";
 
 export default function MySpacesPage() {
   const [mySpaces, setMySpaces] = useState([]);
@@ -19,6 +20,9 @@ export default function MySpacesPage() {
   const [loading, setLoading] = useState(true);
   const [selectedSpaceId, setSelectedSpaceId] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
 
   useEffect(() => {
     const fetchMySpaces = async () => {
@@ -72,6 +76,30 @@ export default function MySpacesPage() {
     }
   };
 
+  const openPopup = (images, index) => {
+    setSelectedImages(images);
+    setCurrentIndex(index);
+    setIsPopupOpen(true);
+  };
+
+  const closePopup = () => {
+    setIsPopupOpen(false);
+    setSelectedImages([]);
+    setCurrentIndex(0);
+  };
+
+  const prevImage = () => {
+    setCurrentIndex((prev) =>
+      prev === 0 ? selectedImages.length - 1 : prev - 1
+    );
+  };
+
+  const nextImage = () => {
+    setCurrentIndex((prev) =>
+      prev === selectedImages.length - 1 ? 0 : prev + 1
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 px-6 py-12 font-sans mt-16 animate-slide-up-fade">
       <div className="max-w-7xl mx-auto">
@@ -110,18 +138,13 @@ export default function MySpacesPage() {
                 className="bg-white rounded-3xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow group flex flex-col overflow-hidden relative"
               >
                 {/* Images Layer */}
-                <div className="h-48 bg-gray-100 relative">
-                  {space.images?.length > 0 ? (
-                    <img src={space.images[0]} alt={space.title} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                      <Home size={32} className="opacity-50" />
-                    </div>
-                  )}
+                <div className="h-48 bg-gray-100 relative group/slider">
+                  <ImageSlider images={space.images || []} onExpand={(images, index) => openPopup(images, index)} />
                   {/* Action Overlay */}
-                  <div className="absolute top-4 right-4 flex gap-2">
+                  <div className="absolute top-4 right-4 flex gap-2 z-20">
                     <button
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setSelectedSpaceId(space.id);
                         setShowModal(true);
                       }}
@@ -174,6 +197,48 @@ export default function MySpacesPage() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* POPUP SLIDER */}
+        {isPopupOpen && (
+          <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 animate-slide-up-fade">
+            <div className="relative max-w-5xl w-full px-4 md:px-12 h-screen flex flex-col justify-center">
+              <button
+                onClick={closePopup}
+                className="absolute top-6 right-6 text-white/50 hover:text-white bg-white/10 p-3 rounded-full backdrop-blur-sm transition"
+              >
+                <X size={28} />
+              </button>
+
+              <div className="relative w-full h-[70vh] flex items-center justify-center">
+                <img
+                  src={selectedImages[currentIndex]}
+                  alt="Space"
+                  className="max-w-full max-h-full object-contain drop-shadow-2xl rounded-lg"
+                />
+              </div>
+
+              {selectedImages.length > 1 && (
+                <>
+                  <button
+                    onClick={prevImage}
+                    className="absolute left-6 top-1/2 -translate-y-1/2 text-white/50 hover:text-white bg-white/10 p-4 rounded-full backdrop-blur-sm transition"
+                  >
+                    <ChevronLeft size={32} />
+                  </button>
+                  <button
+                    onClick={nextImage}
+                    className="absolute right-6 top-1/2 -translate-y-1/2 text-white/50 hover:text-white bg-white/10 p-4 rounded-full backdrop-blur-sm transition"
+                  >
+                    <ChevronRight size={32} />
+                  </button>
+                  <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/80 font-medium tracking-widest text-sm bg-black/50 px-4 py-2 rounded-full backdrop-blur-md">
+                    {currentIndex + 1} / {selectedImages.length}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         )}
 
