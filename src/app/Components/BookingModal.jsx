@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { db, auth } from "../firebase";
 import { collection, addDoc, serverTimestamp, doc, getDoc } from "firebase/firestore";
-import { X, Calendar, Clock, MessageCircle, DollarSign, MapPin } from "lucide-react";
+import { X, Calendar, Clock, MessageCircle, DollarSign, MapPin, Loader2 } from "lucide-react";
 
 export default function BookingModal({ space, isOpen, onClose }) {
   const [bookingData, setBookingData] = useState({
@@ -124,8 +124,6 @@ export default function BookingModal({ space, isOpen, onClose }) {
         createdAt: serverTimestamp()
       };
 
-      console.log("Submitting booking request:", bookingRequest);
-      
       await addDoc(collection(db, "bookingRequests"), bookingRequest);
       
       alert("🎉 Booking request sent successfully! The space owner will be notified.");
@@ -145,7 +143,7 @@ export default function BookingModal({ space, isOpen, onClose }) {
       
     } catch (error) {
       console.error("Error submitting booking:", error);
-      alert(`Failed to submit booking request: ${error.message}. Please try again.`);
+      alert(`Failed to submit: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -162,74 +160,73 @@ export default function BookingModal({ space, isOpen, onClose }) {
   if (!isOpen || !space) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-      <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 rounded-2xl shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-gray-200">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
+    <div className="fixed inset-0 flex items-center justify-center z-50 p-4 bg-black/50 backdrop-blur-sm animate-slide-up-fade">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-gray-100 relative">
+        <div className="p-8">
+          <div className="flex justify-between items-start mb-6">
             <div>
-              <h2 className="text-3xl font-bold text-gray-800">🏠 Book Space</h2>
-              <p className="text-gray-600 mt-1">Reserve your perfect space</p>
+              <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">Book Space</h2>
+              <p className="text-gray-500 mt-1">Configure your reservation for this space</p>
             </div>
             <button
               onClick={onClose}
-              className="p-3 rounded-full bg-gray-100 hover:bg-gray-200 transition-all duration-200 shadow-md hover:shadow-lg"
+              className="p-2 rounded-full hover:bg-gray-100 transition-colors"
             >
-              <X size={20} className="text-gray-600" />
+              <X size={24} className="text-gray-500" />
             </button>
           </div>
 
-          <div className="mb-6 p-5 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100">
-            <h3 className="font-bold text-xl text-gray-800 mb-2">{space.title}</h3>
-            <div className="flex items-center text-gray-600 mb-1">
-              <MapPin size={16} className="mr-2 text-blue-500" />
-              {space.location}
+          <div className="mb-8 p-5 rounded-2xl bg-gray-50 border border-gray-100 flex flex-col sm:flex-row justify-between gap-4">
+            <div>
+              <h3 className="font-bold text-lg text-gray-900 mb-1">{space.title}</h3>
+              <div className="flex items-center text-sm text-gray-600">
+                <MapPin size={16} className="mr-1.5 opacity-70" />
+                {space.location}
+              </div>
             </div>
-            <div className="flex items-center text-gray-600">
-              <DollarSign size={16} className="mr-2 text-green-500" />
-              Original Price: <span className="font-semibold ml-1">₹{space.price}/{space.priceType || "day"}</span>
+            <div className="text-left sm:text-right shrink-0">
+              <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider block mb-0.5">Original Price</span>
+              <div className="text-lg font-bold text-indigo-600">₹{space.price}<span className="text-sm font-medium text-gray-500">/{space.priceType || "day"}</span></div>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-100">
-              <label className="block text-sm font-semibold text-gray-700 mb-3">
-                <Clock className="inline mr-2 text-purple-500" size={16} />
-                Booking Type
-              </label>
-              <div className="flex gap-4">
-                <label className="flex items-center cursor-pointer">
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <label className={`flex items-center p-4 border rounded-2xl cursor-pointer transition-all ${bookingData.bookingType === 'daily' ? 'border-indigo-600 bg-indigo-50/50 ring-1 ring-indigo-600' : 'border-gray-200 hover:border-gray-300'}`}>
                   <input
                     type="radio"
                     name="bookingType"
                     value="daily"
                     checked={bookingData.bookingType === "daily"}
                     onChange={handleChange}
-                    className="mr-3 w-4 h-4 text-blue-600"
+                    className="mr-3 w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600"
                   />
-                  <span className="font-medium text-gray-700">📅 Daily Booking</span>
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-gray-900">Daily Booking</span>
+                    <span className="text-xs text-gray-500">Book per day</span>
+                  </div>
                 </label>
-                <label className="flex items-center cursor-pointer">
+                <label className={`flex items-center p-4 border rounded-2xl cursor-pointer transition-all ${bookingData.bookingType === 'hourly' ? 'border-indigo-600 bg-indigo-50/50 ring-1 ring-indigo-600' : 'border-gray-200 hover:border-gray-300'}`}>
                   <input
                     type="radio"
                     name="bookingType"
                     value="hourly"
                     checked={bookingData.bookingType === "hourly"}
                     onChange={handleChange}
-                    className="mr-3 w-4 h-4 text-blue-600"
+                    className="mr-3 w-4 h-4 text-indigo-600 border-gray-300 focus:ring-indigo-600"
                   />
-                  <span className="font-medium text-gray-700">⏰ Hourly Booking</span>
+                  <div className="flex flex-col">
+                    <span className="font-semibold text-gray-900">Hourly Booking</span>
+                    <span className="text-xs text-gray-500">Book per hour</span>
+                  </div>
                 </label>
               </div>
-            </div>
 
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl border border-green-100">
               {bookingData.bookingType === "daily" ? (
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      <Calendar className="inline mr-2 text-green-500" size={16} />
-                      Start Date
-                    </label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Start Date</label>
                     <input
                       type="date"
                       name="startDate"
@@ -237,7 +234,7 @@ export default function BookingModal({ space, isOpen, onClose }) {
                       onChange={handleChange}
                       required
                       min={new Date().toISOString().split('T')[0]}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium text-gray-900"
                     />
                   </div>
                   <div>
@@ -249,7 +246,7 @@ export default function BookingModal({ space, isOpen, onClose }) {
                       onChange={handleChange}
                       required
                       min={bookingData.startDate || new Date().toISOString().split('T')[0]}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium text-gray-900"
                     />
                   </div>
                 </div>
@@ -264,7 +261,7 @@ export default function BookingModal({ space, isOpen, onClose }) {
                       onChange={handleChange}
                       required
                       min={new Date().toISOString().split('T')[0]}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium text-gray-900"
                     />
                   </div>
                   <div>
@@ -275,7 +272,7 @@ export default function BookingModal({ space, isOpen, onClose }) {
                       value={bookingData.startTime}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium text-gray-900"
                     />
                   </div>
                   <div>
@@ -288,18 +285,15 @@ export default function BookingModal({ space, isOpen, onClose }) {
                       min="1"
                       max="24"
                       required
-                      className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium text-gray-900"
                     />
                   </div>
                 </div>
               )}
-            </div>
 
-            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-4 rounded-xl border border-yellow-100">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    <DollarSign className="inline mr-2 text-yellow-500" size={16} />
                     Proposed Price (₹/{bookingData.bookingType === "daily" ? "day" : "hour"})
                   </label>
                   <input
@@ -309,48 +303,46 @@ export default function BookingModal({ space, isOpen, onClose }) {
                     onChange={handleChange}
                     min="0"
                     required
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium text-gray-900"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Your Budget (₹)</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2 flex justify-between">
+                    Your Budget (₹) <span className="font-normal text-gray-400 text-xs">Optional</span>
+                  </label>
                   <input
                     type="number"
                     name="budget"
                     value={bookingData.budget}
                     onChange={handleChange}
-                    placeholder="Optional"
-                    className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                    placeholder="E.g. 5000"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium text-gray-900"
                   />
                 </div>
               </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Message to Owner</label>
+                <textarea
+                  name="message"
+                  value={bookingData.message}
+                  onChange={handleChange}
+                  rows="3"
+                  placeholder="Introduce yourself and explain your booking needs..."
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-gray-900 resize-none"
+                />
+              </div>
             </div>
 
-            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-4 rounded-xl border border-indigo-100">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                <MessageCircle className="inline mr-2 text-indigo-500" size={16} />
-                Message to Owner
-              </label>
-              <textarea
-                name="message"
-                value={bookingData.message}
-                onChange={handleChange}
-                rows="3"
-                placeholder="Introduce yourself and explain your booking needs..."
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"
-              />
-            </div>
-
-            <div className="p-5 rounded-xl bg-gradient-to-r from-green-100 to-emerald-100 border border-green-200">
-              <div className="flex justify-between items-center">
-                <span className="font-semibold text-gray-700 text-lg">💰 Total Cost:</span>
-                <span className="text-2xl font-bold text-green-600">₹{totalCost}</span>
+            <div className="p-5 rounded-2xl bg-indigo-50 border border-indigo-100 mt-6">
+              <div className="flex justify-between items-center mb-1">
+                <span className="font-bold text-gray-800 text-lg">Total Cost</span>
+                <span className="text-3xl font-black text-indigo-700 tracking-tight">₹{totalCost}</span>
               </div>
               {bookingData.budget && totalCost > bookingData.budget && (
-                <div className="mt-3 p-3 rounded-lg bg-red-50 border border-red-200">
-                  <p className="text-sm text-red-600 flex items-center">
-                    ⚠️ <span className="ml-2">Total cost exceeds your budget by ₹{totalCost - bookingData.budget}</span>
-                  </p>
+                <div className="text-sm font-medium text-red-600 mt-2 flex items-center">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-600 mr-2"></span>
+                  Cost exceeds budget by ₹{totalCost - bookingData.budget}
                 </div>
               )}
             </div>
@@ -358,15 +350,12 @@ export default function BookingModal({ space, isOpen, onClose }) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 font-bold text-lg rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl transform hover:-translate-y-0.5"
+              className="w-full py-4 font-bold text-lg rounded-xl bg-gray-900 text-white shadow-md hover:bg-black transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
-                <span className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                  Sending Request...
-                </span>
+                <><Loader2 className="animate-spin" size={20} /> Sending...</>
               ) : (
-                "🚀 Send Booking Request"
+                "Send Request"
               )}
             </button>
           </form>

@@ -1,23 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { FaSignInAlt, FaUserPlus } from "react-icons/fa";
-import {
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signInWithPopup,
-  signOut,
-} from "firebase/auth";
+import { useState, useEffect } from "react";
+import { FcGoogle } from "react-icons/fc";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, signOut } from "firebase/auth";
 import { auth, googleProvider } from "../firebase";
 import { useRouter } from "next/navigation";
+import { LogIn, UserPlus, ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
-  const [useEmail, setUseEmail] = useState(true); // 👈 Directly show Email form
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+
   const router = useRouter();
 
   useEffect(() => {
@@ -30,21 +29,28 @@ export default function AuthPage() {
 
   const handleGoogleLogin = async () => {
     try {
+      setLoading(true);
+      setErrorMsg("");
       await signInWithPopup(auth, googleProvider);
       router.push("/home");
     } catch (err) {
-      alert("Google sign-in failed: " + err.message);
+      setErrorMsg("Google sign-in failed: " + err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorMsg("");
+
     if (!isLogin && password !== confirm) {
-      alert("Passwords do not match.");
+      setErrorMsg("Passwords do not match.");
       return;
     }
 
     try {
+      setLoading(true);
       if (isLogin) {
         await signInWithEmailAndPassword(auth, email, password);
       } else {
@@ -52,92 +58,173 @@ export default function AuthPage() {
       }
       router.push("/home");
     } catch (err) {
-      alert(err.message);
+      setErrorMsg(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#e0e5ec] font-sans">
-      <div className="bg-[#e0e5ec] p-8 rounded-2xl shadow-[10px_10px_30px_#c2c8d0,_-10px_-10px_30px_#ffffff] w-full max-w-md">
-        
-        {/* Always Email Login/Register */}
-        <div className="flex justify-between mb-6">
-          <button
-            className={`flex-1 py-2 font-bold rounded-xl transition text-black ${
-              isLogin ? "bg-[#d1d9e6] shadow-inner" : "hover:bg-[#d1d9e6]"
-            }`}
-            onClick={() => setIsLogin(true)}
-          >
-            Login
-          </button>
-          <button
-            className={`flex-1 py-2 font-bold rounded-xl transition text-black ${
-              !isLogin ? "bg-[#d1d9e6] shadow-inner" : "hover:bg-[#d1d9e6]"
-            }`}
-            onClick={() => setIsLogin(false)}
-          >
-            Register
-          </button>
+    <div className="min-h-screen flex font-sans bg-white overflow-hidden">
+      {/* Left Side: Visual / Brand */}
+      <div className="hidden lg:flex lg:w-[45%] relative bg-gray-900 items-center justify-center p-12">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,_rgba(79,70,229,0.15),_transparent_50%)]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_70%,_rgba(124,58,237,0.15),_transparent_50%)]"></div>
+
+        <div className="relative z-10 w-full max-w-lg text-white">
+          <Link href="/home" className="inline-block text-3xl font-black tracking-tight mb-20 hover:opacity-80 transition-opacity">
+            ShareNest<span className="text-indigo-500">.</span>
+          </Link>
+
+
+
+          <h1 className="text-5xl font-extrabold mb-8 leading-[1.1] tracking-tight">
+            Discover <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-400">perfect spaces</span> everywhere.
+          </h1>
+          <p className="text-xl text-gray-400 leading-relaxed mb-12 max-w-md">
+            Whether you're looking for a short-term study spot or wanting to share your extra room, ShareNest connects you instantly.
+          </p>
+
+          {/* Trust badges */}
+
         </div>
+      </div>
 
-        <form className="flex flex-col" onSubmit={handleSubmit}>
-          {!isLogin && (
-            <input
-              type="text"
-              placeholder="Full Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              className="mb-4 px-4 py-3 rounded-xl text-black bg-[#e0e5ec] shadow-inner"
-            />
-          )}
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="mb-4 px-4 py-3 rounded-xl text-black bg-[#e0e5ec] shadow-inner"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="mb-4 px-4 py-3 rounded-xl text-black bg-[#e0e5ec] shadow-inner"
-          />
-          {!isLogin && (
-            <input
-              type="password"
-              placeholder="Confirm Password"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              required
-              className="mb-4 px-4 py-3 rounded-xl text-black bg-[#e0e5ec] shadow-inner"
-            />
-          )}
-          <button
-            type="submit"
-            className="flex items-center justify-center gap-2 bg-[#e0e5ec] shadow-[6px_6px_10px_#c2c8d0,_-6px_-6px_10px_#ffffff] hover:bg-[#d6dce4] font-bold py-3 rounded-xl transition mb-4 text-black"
-          >
-            {isLogin ? <FaSignInAlt /> : <FaUserPlus />}
-            {isLogin ? "Login" : "Register"}
-          </button>
-        </form>
+      {/* Right Side: Form */}
+      <div className="w-full lg:w-[55%] flex items-center justify-center p-6 sm:p-12 bg-gray-50 lg:bg-white relative">
+        <Link href="/home" className="absolute top-8 left-8 lg:left-12 text-gray-500 hover:text-gray-900 transition flex items-center gap-2 text-sm font-semibold">
+          <ArrowLeft size={18} /> Back to Home
+        </Link>
 
-        {/* Optional Google Button */}
-        <p className="text-center text-sm text-gray-600 mb-2">Or continue with</p>
-        <div className="flex justify-around">
-          <button
-            type="button"
-            onClick={handleGoogleLogin}
-            className="w-10 h-10 rounded-full text-black bg-[#e0e5ec] shadow-[6px_6px_10px_#c2c8d0,_-6px_-6px_10px_#ffffff] hover:bg-[#d6dce4]"
-          >
-            G
-          </button>
+        <div className="w-full max-w-md animate-slide-up-fade">
+          <div className="text-center md:text-left mb-8">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 mb-3 tracking-tight">
+              {isLogin ? "Welcome back" : "Create an account"}
+            </h2>
+            <p className="text-gray-500 text-base">
+              {isLogin
+                ? "Enter your details to access your account."
+                : "Sign up to start finding and sharing spaces."}
+            </p>
+          </div>
+
+          {errorMsg && (
+            <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm font-medium flex items-center">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-600 mr-2 flex-shrink-0"></span>
+              {errorMsg}
+            </div>
+          )}
+
+          <div className="flex p-1 bg-gray-100 rounded-xl mb-8">
+            <button
+              className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition-all ${isLogin ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700 hover:bg-gray-200/50"
+                }`}
+              onClick={() => { setIsLogin(true); setErrorMsg(""); }}
+            >
+              Log In
+            </button>
+            <button
+              className={`flex-1 py-2.5 text-sm font-bold rounded-lg transition-all ${!isLogin ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700 hover:bg-gray-200/50"
+                }`}
+              onClick={() => { setIsLogin(false); setErrorMsg(""); }}
+            >
+              Sign Up
+            </button>
+          </div>
+
+          <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+            {!isLogin && (
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Full Name</label>
+                <input
+                  type="text"
+                  placeholder="John Doe"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  className="w-full px-4 py-3.5 rounded-xl border border-gray-200 text-gray-900 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all placeholder:text-gray-400 font-medium"
+                />
+              </div>
+            )}
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2">Email Address</label>
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full px-4 py-3.5 rounded-xl border border-gray-200 text-gray-900 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all placeholder:text-gray-400 font-medium"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-700 mb-2 flex justify-between">
+                Password
+                {isLogin && <a href="#" className="text-xs text-indigo-600 hover:text-indigo-700 font-semibold focus:outline-none">Forgot?</a>}
+              </label>
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full px-4 py-3.5 rounded-xl border border-gray-200 text-gray-900 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all placeholder:text-gray-400 font-medium"
+              />
+            </div>
+            {!isLogin && (
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Confirm Password</label>
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  value={confirm}
+                  onChange={(e) => setConfirm(e.target.value)}
+                  required
+                  className="w-full px-4 py-3.5 rounded-xl border border-gray-200 text-gray-900 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all placeholder:text-gray-400 font-medium"
+                />
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="mt-4 w-full flex items-center justify-center gap-2 bg-gray-900 hover:bg-black text-white font-bold py-4 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed group"
+            >
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : isLogin ? (
+                <><LogIn size={18} className="group-hover:-translate-x-1 transition-transform" /> Sign In securely</>
+              ) : (
+                <><UserPlus size={18} className="group-hover:-translate-x-1 transition-transform" /> Create Account</>
+              )}
+            </button>
+          </form>
+
+          <div className="mt-8">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-gray-50 lg:bg-white text-gray-400 font-medium">Or continue with</span>
+              </div>
+            </div>
+
+            <div className="mt-8">
+              <button
+                type="button"
+                onClick={handleGoogleLogin}
+                className="w-full flex justify-center items-center gap-3 py-3 border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm group font-semibold text-gray-700"
+              >
+                <FcGoogle size={24} className="group-hover:scale-110 transition-transform" />
+                Continue with Google
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
 }
+
+

@@ -3,19 +3,19 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCDCtrEFSxTI2qQLm_baFdTeAHTuK-x0Mw",
-  authDomain: "shareapp-67a9f.firebaseapp.com",
-  projectId: "shareapp-67a9f",
-  storageBucket: "shareapp-67a9f.appspot.com", 
-  messagingSenderId: "744218399378",
-  appId: "1:744218399378:web:9c506d18d343def4cd0c4b",
-  measurementId: "G-K341KZKYJL",
+  apiKey: "AIzaSyCldTnJhxR2DMHIdjzxEf-yrZhX8QjEK8I",
+  authDomain: "sharenest-63fda.firebaseapp.com",
+  projectId: "sharenest-63fda",
+  storageBucket: "sharenest-63fda.firebasestorage.app",
+  messagingSenderId: "1031174105816",
+  appId: "1:1031174105816:web:42107bf41b48b03a66c5ad",
+  measurementId: "G-4RPQQ2GSFX"
 };
 
 const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
-export const db = getFirestore(app); 
+export const db = getFirestore(app);
 
 
 export const googleProvider = new GoogleAuthProvider();

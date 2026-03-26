@@ -1,91 +1,103 @@
 "use client";
 
 import Link from "next/link";
-import { Calendar, DollarSign, MessageCircle, Shield, Clock, MapPin } from "lucide-react";
+import { Calendar, DollarSign, MessageCircle, Shield, Clock, MapPin, ArrowRight, HomeIcon } from "lucide-react";
 
 export default function page() {
   return (
-    <main className="min-h-screen bg-[#e0e5ec] text-gray-800 font-sans px-6 py-12 mt-18">
-      <div className="max-w-6xl mx-auto">
+    <main className="min-h-screen bg-gray-50 text-gray-900 font-sans pt-28 pb-16">
+      <div className="max-w-7xl mx-auto px-6">
         {/* Hero Section */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-6xl font-extrabold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Find or Share Your Perfect Space
+        <div className="text-center mb-24 mt-10">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 text-indigo-700 font-medium text-sm mb-6 animate-slide-up-fade" style={{ animationDelay: '0ms' }}>
+            <span className="flex h-2 w-2 rounded-full bg-indigo-600"></span>
+            ShareNest is now live
+          </div>
+          <h1 className="text-5xl md:text-7xl font-extrabold mb-8 tracking-tight text-gray-900 animate-slide-up-fade" style={{ animationDelay: '100ms' }}>
+            Find or Share Your <br className="hidden md:block" />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">Perfect Space</span>
           </h1>
-          <p className="text-lg md:text-xl text-gray-600 mb-10 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto leading-relaxed animate-slide-up-fade" style={{ animationDelay: '200ms' }}>
             A modern platform where students can offer or find extra space in flats — book by the hour or day, negotiate prices, and connect with verified users.
           </p>
 
-          <div className="flex justify-center gap-6 flex-wrap mb-12">
-            <Link
-              href="/list-space"
-              className="group px-8 py-4 rounded-2xl bg-[#e0e5ec] text-lg font-medium shadow-[6px_6px_12px_#c2c8d0,_-6px_-6px_12px_#ffffff] hover:bg-[#d6dce4] transition-all duration-300 hover:shadow-[8px_8px_16px_#c2c8d0,_-8px_-8px_16px_#ffffff] transform hover:-translate-y-1"
-            >
-              <span className="flex items-center">
-                📝 List Your Space
-                <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
-              </span>
-            </Link>
+          <div className="flex justify-center gap-4 flex-wrap animate-slide-up-fade" style={{ animationDelay: '300ms' }}>
             <Link
               href="/find-space"
-              className="group px-8 py-4 rounded-2xl bg-[#e0e5ec] text-lg font-medium shadow-[6px_6px_12px_#c2c8d0,_-6px_-6px_12px_#ffffff] hover:bg-[#d6dce4] transition-all duration-300 hover:shadow-[8px_8px_16px_#c2c8d0,_-8px_-8px_16px_#ffffff] transform hover:-translate-y-1"
+              className="group px-8 py-4 rounded-full bg-gray-900 text-white text-lg font-semibold hover:bg-black transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
             >
-              <span className="flex items-center">
-                🔍 Find a Space
-                <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
-              </span>
+              <HomeIcon size={20} className="text-gray-300 group-hover:text-white transition-colors" />
+              Find a Space
+            </Link>
+            <Link
+              href="/list-space"
+              className="group px-8 py-4 rounded-full bg-white text-gray-900 border border-gray-200 text-lg font-semibold hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm flex items-center justify-center gap-2"
+            >
+              List Your Space
+              <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
         </div>
 
         {/* New Features Highlight */}
-        <div className="mb-16">
-          <h2 className="text-2xl font-bold text-center mb-8 text-gray-800">✨ New Features</h2>
-          <div className="grid md:grid-cols-3 gap-6">
+        <div className="mb-24">
+          <div className="flex items-center justify-between mb-10">
+            <h2 className="text-3xl font-bold text-gray-900">✨ New Features</h2>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8">
             <FeatureCard
-              icon={<Clock className="text-blue-500" size={24} />}
+              icon={<Clock className="text-indigo-600" size={28} />}
               title="Hourly Booking"
               desc="Book spaces by the hour for short-term needs. Perfect for study sessions or quick meetings."
               highlight={true}
             />
             <FeatureCard
-              icon={<MessageCircle className="text-green-500" size={24} />}
+              icon={<MessageCircle className="text-teal-600" size={28} />}
               title="Price Negotiation"
               desc="Chat with space owners to negotiate prices that work for both parties."
               highlight={true}
+              color="teal"
             />
             <FeatureCard
-              icon={<DollarSign className="text-purple-500" size={24} />}
+              icon={<DollarSign className="text-violet-600" size={28} />}
               title="Budget Filtering"
               desc="Set your budget and find spaces that match your financial needs."
               highlight={true}
+              color="violet"
             />
           </div>
         </div>
 
         {/* Core Features */}
-        <section className="grid md:grid-cols-3 gap-8 text-left mb-16">
-          <FeatureCard
-            icon={<MapPin className="text-red-500" size={24} />}
-            title="Location-Based Search"
-            desc="Find spaces near you with integrated maps and GPS coordinates."
-          />
-          <FeatureCard
-            icon={<Shield className="text-indigo-500" size={24} />}
-            title="Secure & Verified"
-            desc="Only verified users can book or list. Your safety and security come first."
-          />
-          <FeatureCard
-            icon={<Calendar className="text-orange-500" size={24} />}
-            title="Flexible Booking"
-            desc="Book for days, hours, or negotiate custom arrangements that suit your needs."
-          />
+        <section className="mb-24">
+          <h2 className="text-3xl font-bold text-gray-900 mb-10">Core Capabilities</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            <FeatureCard
+              icon={<MapPin className="text-rose-600" size={28} />}
+              title="Location-Based Search"
+              desc="Find spaces near you with integrated maps and GPS coordinates."
+              color="rose"
+            />
+            <FeatureCard
+              icon={<Shield className="text-blue-600" size={28} />}
+              title="Secure & Verified"
+              desc="Only verified users can book or list. Your safety and security come first."
+              color="blue"
+            />
+            <FeatureCard
+              icon={<Calendar className="text-orange-600" size={28} />}
+              title="Flexible Booking"
+              desc="Book for days, hours, or negotiate custom arrangements that suit your needs."
+              color="orange"
+            />
+          </div>
         </section>
 
         {/* How It Works */}
-        <section className="mb-16">
-          <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">How It Works</h2>
-          <div className="grid md:grid-cols-4 gap-6">
+        <section className="mb-24">
+          <h2 className="text-3xl font-bold text-center mb-16 text-gray-900">How It Works</h2>
+          <div className="grid md:grid-cols-4 gap-8 relative">
+            <div className="hidden md:block absolute top-8 left-[10%] right-[10%] h-0.5 bg-gray-200 -z-10"></div>
             <StepCard
               step="1"
               title="Sign Up"
@@ -94,23 +106,23 @@ export default function page() {
             <StepCard
               step="2"
               title="List or Search"
-              desc="Post your available space or browse through available listings in your area."
+              desc="Post your available space or browse through listings in your area."
             />
             <StepCard
               step="3"
-              title="Connect & Negotiate"
-              desc="Send booking requests, negotiate prices, and communicate with space owners."
+              title="Negotiate"
+              desc="Send booking requests and negotiate with space owners."
             />
             <StepCard
               step="4"
-              title="Book & Enjoy"
-              desc="Confirm your booking and enjoy your perfect space at the right price."
+              title="Enjoy"
+              desc="Confirm your booking and enjoy your perfect space."
             />
           </div>
         </section>
 
         {/* Stats */}
-        <section className="text-center mb-16">
+        <section className="mb-24">
           <div className="grid md:grid-cols-3 gap-8">
             <StatCard number="500+" label="Active Spaces" />
             <StatCard number="1000+" label="Happy Users" />
@@ -120,15 +132,23 @@ export default function page() {
 
         {/* CTA */}
         <section className="text-center">
-          <div className="bg-[#e0e5ec] rounded-3xl p-8 shadow-[10px_10px_30px_#c2c8d0,_-10px_-10px_30px_#ffffff]">
-            <h2 className="text-2xl font-bold mb-4 text-gray-800">Ready to Get Started?</h2>
-            <p className="text-gray-600 mb-6">Join thousands of students finding and sharing spaces across the city.</p>
-            <Link
-              href="/auth"
-              className="inline-block px-8 py-4 rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
-            >
-              Get Started Today
-            </Link>
+          <div className="bg-indigo-600 rounded-[2.5rem] p-12 md:p-16 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500 rounded-full blur-3xl opacity-50 -translate-y-1/2 translate-x-1/3"></div>
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-700 rounded-full blur-3xl opacity-50 translate-y-1/3 -translate-x-1/3"></div>
+            
+            <div className="relative z-10">
+              <h2 className="text-3xl md:text-5xl font-bold mb-6 text-white tracking-tight">Ready to Get Started?</h2>
+              <p className="text-indigo-100 text-lg mb-10 max-w-2xl mx-auto">
+                Join thousands of students finding and sharing spaces across the city. Experience the modern way of renting.
+              </p>
+              <Link
+                href="/auth"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white text-indigo-600 font-bold text-lg hover:bg-gray-50 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              >
+                Get Started Today
+                <ArrowRight size={20} />
+              </Link>
+            </div>
           </div>
         </section>
       </div>
@@ -136,38 +156,49 @@ export default function page() {
   );
 }
 
-function FeatureCard({ icon, title, desc, highlight = false }) {
+function FeatureCard({ icon, title, desc, highlight = false, color = "indigo" }) {
+  const colorMap = {
+    indigo: "bg-indigo-50 text-indigo-600 ring-indigo-500",
+    teal: "bg-teal-50 text-teal-600 ring-teal-500",
+    violet: "bg-violet-50 text-violet-600 ring-violet-500",
+    rose: "bg-rose-50 text-rose-600",
+    blue: "bg-blue-50 text-blue-600",
+    orange: "bg-orange-50 text-orange-600",
+  };
+
   return (
-    <div className={`bg-[#e0e5ec] rounded-2xl p-6 shadow-[6px_6px_12px_#c2c8d0,_-6px_-6px_12px_#ffffff] hover:bg-[#d6dce4] transition-all duration-300 hover:shadow-[8px_8px_16px_#c2c8d0,_-8px_-8px_16px_#ffffff] transform hover:-translate-y-1 ${
-      highlight ? 'ring-2 ring-blue-300' : ''
+    <div className={`bg-white rounded-2xl p-8 border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group relative overflow-hidden ${
+      highlight ? `ring-1 ${colorMap[color].split(' ')[2]}` : ''
     }`}>
-      <div className="flex items-center mb-3">
+      <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-6 transition-colors ${colorMap[color].split(' ').slice(0, 2).join(' ')} group-hover:bg-white group-hover:border group-hover:border-gray-100 group-hover:shadow-sm`}>
         {icon}
-        <h3 className="text-xl font-semibold ml-3">{title}</h3>
-        {highlight && <span className="ml-2 text-xs bg-blue-500 text-white px-2 py-1 rounded-full">NEW</span>}
       </div>
-      <p className="text-gray-600 leading-relaxed">{desc}</p>
+      <h3 className="text-xl font-bold text-gray-900 mb-3 flex items-center justify-between">
+        {title}
+        {highlight && <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${colorMap[color].split(' ').slice(0, 2).join(' ')}`}>NEW</span>}
+      </h3>
+      <p className="text-gray-500 leading-relaxed">{desc}</p>
     </div>
   );
 }
 
 function StepCard({ step, title, desc }) {
   return (
-    <div className="text-center">
-      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center font-bold text-lg mx-auto mb-4 shadow-lg">
+    <div className="text-center relative">
+      <div className="w-16 h-16 bg-white border-2 border-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center font-bold text-2xl mx-auto mb-6 shadow-sm z-10 relative">
         {step}
       </div>
-      <h3 className="text-lg font-semibold mb-2">{title}</h3>
-      <p className="text-gray-600 text-sm leading-relaxed">{desc}</p>
+      <h3 className="text-xl font-bold text-gray-900 mb-3">{title}</h3>
+      <p className="text-gray-500 leading-relaxed">{desc}</p>
     </div>
   );
 }
 
 function StatCard({ number, label }) {
   return (
-    <div className="bg-[#e0e5ec] rounded-2xl p-6 shadow-[6px_6px_12px_#c2c8d0,_-6px_-6px_12px_#ffffff]">
-      <div className="text-3xl font-bold text-blue-600 mb-2">{number}</div>
-      <div className="text-gray-600 font-medium">{label}</div>
+    <div className="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm text-center">
+      <div className="text-4xl font-black text-gray-900 mb-2">{number}</div>
+      <div className="text-gray-500 font-medium">{label}</div>
     </div>
   );
 }

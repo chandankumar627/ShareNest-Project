@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { db } from "../firebase";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
-import { X, ChevronLeft, ChevronRight, Calendar, MapPin, Star } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Calendar, MapPin, Star, Phone, ShieldCheck } from "lucide-react";
 import BookingModal from "../Components/BookingModal";
 import FilterPanel from "../Components/FilterPanel";
 
@@ -55,15 +55,15 @@ export default function FindSpacePage() {
     // Search term filter
     if (filters.searchTerm) {
       filtered = filtered.filter(space => 
-        space.title.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-        space.description.toLowerCase().includes(filters.searchTerm.toLowerCase())
+        space.title?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
+        space.description?.toLowerCase().includes(filters.searchTerm.toLowerCase())
       );
     }
 
     // Location filter
     if (filters.location) {
       filtered = filtered.filter(space => 
-        space.location.toLowerCase().includes(filters.location.toLowerCase())
+        space.location?.toLowerCase().includes(filters.location.toLowerCase())
       );
     }
 
@@ -90,7 +90,6 @@ export default function FindSpacePage() {
     if (!date) return "";
     return new Intl.DateTimeFormat("en-IN", {
       dateStyle: "medium",
-      timeStyle: "short",
     }).format(date);
   };
 
@@ -129,193 +128,206 @@ export default function FindSpacePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#e0e5ec] px-6 py-12 font-sans mt-20">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-extrabold text-black">
-            Available Spaces
-          </h1>
-          <p className="text-gray-600 mt-2">
-            {filteredSpaces.length} of {spaces.length} spaces
-            {filters.budget && ` • Budget: ₹${filters.budget}`}
-          </p>
-        </div>
-      </div>
-
-      <FilterPanel 
-        filters={filters}
-        onFiltersChange={setFilters}
-        isOpen={isFilterOpen}
-        onToggle={() => setIsFilterOpen(!isFilterOpen)}
-      />
-
-      {filteredSpaces.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-600 text-lg">No spaces match your criteria.</p>
-          <button
-            onClick={() => setFilters({
-              location: "",
-              minPrice: "",
-              maxPrice: "",
-              minBeds: "",
-              maxBeds: "",
-              budget: "",
-              searchTerm: ""
-            })}
-            className="mt-4 px-6 py-2 rounded-xl bg-[#e0e5ec] shadow-[6px_6px_12px_#c2c8d0,_-6px_-6px_12px_#ffffff] hover:bg-[#d6dce4] transition text-black"
+    <div className="min-h-screen bg-gray-50 px-6 py-12 font-sans mt-16 animate-slide-up-fade">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+          <div>
+            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+              Explore Available Spaces
+            </h1>
+            <p className="text-gray-500 mt-2 font-medium">
+              Showing {filteredSpaces.length} of {spaces.length} spaces
+              {filters.budget && <span className="text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded ml-2">Budget: ₹{filters.budget}</span>}
+            </p>
+          </div>
+          <button 
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
+            className="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition shadow-sm"
           >
-            Clear Filters
+            {isFilterOpen ? "Close Filters" : "Filter Spaces"}
           </button>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {filteredSpaces.map((space) => (
-            <div
-              key={space.id}
-              className={`bg-[#e0e5ec] p-6 rounded-2xl shadow-[6px_6px_20px_#c2c8d0,_-6px_-6px_20px_#ffffff] text-black flex flex-col lg:flex-row gap-6 relative ${
-                isWithinBudget(space) ? 'ring-2 ring-green-400' : ''
-              }`}
-            >
-              {/* Budget Badge */}
-              {isWithinBudget(space) && (
-                <div className="absolute top-3 right-3 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center">
-                  <Star size={12} className="mr-1" />
-                  Within Budget
-                </div>
-              )}
 
-              {/* LEFT SIDE - DETAILS */}
-              <div className="flex-1">
-                <h2 className="text-xl font-bold mb-2">{space.title}</h2>
-                <div className="space-y-2 mb-4">
-                  <p className="text-sm text-gray-700 flex items-center">
-                    <MapPin size={16} className="mr-2" />
-                    <strong>Location:</strong> {space.location}
-                  </p>
+        <FilterPanel 
+          filters={filters}
+          onFiltersChange={setFilters}
+          isOpen={isFilterOpen}
+          onToggle={() => setIsFilterOpen(!isFilterOpen)}
+        />
 
-                  {space.latitude && space.longitude && (
-                    <p className="text-sm text-gray-700">
-                      🌐 <strong>Coordinates:</strong>{" "}
-                      {space.latitude.toFixed(5)}, {space.longitude.toFixed(5)}
-                    </p>
-                  )}
-
-                  <p className="text-sm text-gray-700">
-                    💰 <strong>Price:</strong> ₹{space.price}/{space.priceType || "day"}
-                  </p>
-                  <p className="text-sm text-gray-700">
-                    🛏️ <strong>Beds:</strong> {space.beds}
-                  </p>
-                  <p className="text-sm text-gray-700">
-                    ✉️ <strong>Contact:</strong> {space.contact}
-                  </p>
-                </div>
-                
-                <p className="text-sm text-gray-700 mb-4">
-                  📝 <strong>Description:</strong> {space.description}
-                </p>
-                
-                <div className="flex gap-2 mb-4">
-                  <button
-                    onClick={() => handleBookSpace(space)}
-                    className="flex-1 py-2 px-4 rounded-xl bg-blue-500 text-white font-semibold shadow hover:bg-blue-600 transition flex items-center justify-center"
-                  >
-                    <Calendar className="mr-2" size={16} />
-                    Book Now
-                  </button>
-                  <a
-                    href={`tel:${space.contact}`}
-                    className="px-4 py-2 rounded-xl bg-green-500 text-white font-semibold shadow hover:bg-green-600 transition"
-                  >
-                    📞 Call
-                  </a>
-                </div>
-
-                <p className="text-xs text-gray-500 text-right">
-                  📅 Posted on: {formatDate(space.createdAt)}
-                </p>
-
-                {/* IMAGES */}
-                {space.images?.length > 0 && (
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {space.images.map((img, idx) => (
-                      <img
-                        key={idx}
-                        src={img}
-                        alt={`Space ${idx}`}
-                        className="w-24 h-24 object-cover rounded-xl cursor-pointer shadow hover:shadow-lg transition"
-                        onClick={() => openPopup(space.images, idx)}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* RIGHT SIDE - MAP */}
-              {space.latitude && space.longitude && (
-                <div className="flex-1">
-                  <iframe
-                    src={`https://www.google.com/maps?q=${space.latitude},${space.longitude}&hl=en&z=15&output=embed`}
-                    width="100%"
-                    height="300"
-                    className="rounded-xl shadow-inner"
-                    allowFullScreen
-                    loading="lazy"
-                  ></iframe>
-                </div>
-              )}
+        {filteredSpaces.length === 0 ? (
+          <div className="text-center py-20 bg-white rounded-3xl border border-gray-200 shadow-sm mt-8">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <MapPin className="text-gray-400" size={32} />
             </div>
-          ))}
-        </div>
-      )}
-
-      {/* POPUP SLIDER */}
-      {isPopupOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-          <div className="relative max-w-3xl w-full px-6">
-            {/* Close Button */}
+            <h3 className="text-xl font-bold text-gray-900 mb-2">No spaces found</h3>
+            <p className="text-gray-500 text-base mb-6">We couldn't find any spaces matching your criteria.</p>
             <button
-              onClick={closePopup}
-              className="absolute top-4 right-4 bg-white p-2 rounded-full shadow hover:bg-gray-200"
+              onClick={() => setFilters({
+                location: "", minPrice: "", maxPrice: "", minBeds: "", maxBeds: "", budget: "", searchTerm: ""
+              })}
+              className="px-6 py-3 rounded-full bg-gray-900 text-white font-semibold hover:bg-black transition shadow-sm"
             >
-              <X size={24} />
-            </button>
-
-            {/* Image */}
-            <img
-              src={selectedImages[currentIndex]}
-              alt="Space"
-              className="w-full h-[70vh] object-contain rounded-xl shadow-lg"
-            />
-
-            {/* Prev Button */}
-            <button
-              onClick={prevImage}
-              className="absolute left-4 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow hover:bg-gray-200"
-            >
-              <ChevronLeft size={28} />
-            </button>
-
-            {/* Next Button */}
-            <button
-              onClick={nextImage}
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow hover:bg-gray-200"
-            >
-              <ChevronRight size={28} />
+              Clear all filters
             </button>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="grid grid-cols-1 gap-8 mt-8">
+            {filteredSpaces.map((space) => (
+              <div
+                key={space.id}
+                className={`bg-white rounded-3xl shadow-sm border ${
+                  isWithinBudget(space) ? 'border-emerald-300 ring-4 ring-emerald-50' : 'border-gray-200 hover:shadow-lg transition-shadow'
+                } flex flex-col lg:flex-row overflow-hidden relative group`}
+              >
+                {/* Budget Badge */}
+                {isWithinBudget(space) && (
+                  <div className="absolute top-4 left-4 z-10 bg-emerald-500 text-white px-3 py-1.5 rounded-full text-xs font-bold flex items-center shadow-sm">
+                    <Star size={14} className="mr-1 fill-current" />
+                    Within Budget
+                  </div>
+                )}
 
-      {/* Booking Modal */}
-      <BookingModal 
-        space={selectedSpace}
-        isOpen={isBookingModalOpen}
-        onClose={() => {
-          setIsBookingModalOpen(false);
-          setSelectedSpace(null);
-        }}
-      />
+                {/* LEFT SIDE - IMAGES */}
+                <div className="lg:w-1/3 h-64 lg:h-auto bg-gray-100 relative">
+                  {space.images?.length > 0 ? (
+                    <>
+                      <img
+                        src={space.images[0]}
+                        alt="Space cover"
+                        className="w-full h-full object-cover"
+                      />
+                      {space.images.length > 1 && (
+                        <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-medium cursor-pointer hover:bg-black/80 transition" onClick={() => openPopup(space.images, 0)}>
+                          + {space.images.length - 1} more
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
+                      <MapPin size={48} className="mb-2 opacity-50" />
+                      <span className="text-sm font-medium">No images</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* RIGHT SIDE - DETAILS */}
+                <div className="flex-1 p-6 md:p-8 flex flex-col justify-between">
+                  <div>
+                    <div className="flex justify-between items-start mb-2">
+                      <h2 className="text-2xl font-bold text-gray-900 line-clamp-1">{space.title}</h2>
+                      <div className="text-right ml-4 shrink-0">
+                        <p className="text-2xl font-black text-indigo-600">₹{space.price}</p>
+                        <p className="text-xs text-gray-500 font-medium uppercase tracking-wider">Per {space.priceType || "day"}</p>
+                      </div>
+                    </div>
+                    
+                    <p className="text-sm text-gray-500 flex items-center mb-6">
+                      <MapPin size={16} className="mr-1.5 text-gray-400" />
+                      {space.location}
+                    </p>
+
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                      <div className="bg-gray-50 p-3 rounded-2xl border border-gray-100 flex flex-col justify-center">
+                        <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-1">Beds</span>
+                        <span className="text-lg font-bold text-gray-900">{space.beds}</span>
+                      </div>
+                      <div className="bg-gray-50 p-3 rounded-2xl border border-gray-100 flex flex-col justify-center">
+                        <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider mb-1">Status</span>
+                        <span className="text-sm font-bold text-emerald-600 flex items-center gap-1">
+                          <ShieldCheck size={16} /> Verified
+                        </span>
+                      </div>
+                    </div>
+
+                    <p className="text-sm text-gray-600 mb-6 line-clamp-2 leading-relaxed">
+                      {space.description}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-gray-100">
+                    <div className="flex items-center gap-2 text-sm text-gray-500 font-medium w-full sm:w-auto">
+                      <span className="bg-gray-100 px-3 py-1.5 rounded-full text-xs">Posted {formatDate(space.createdAt)}</span>
+                    </div>
+                    
+                    <div className="flex gap-3 w-full sm:w-auto">
+                      <a
+                        href={`tel:${space.contact}`}
+                        className="flex-1 sm:flex-none px-6 py-3 rounded-full bg-white border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 transition shadow-sm flex items-center justify-center gap-2"
+                      >
+                        <Phone size={18} />
+                        Call
+                      </a>
+                      <button
+                        onClick={() => handleBookSpace(space)}
+                        className="flex-1 sm:flex-none px-6 py-3 rounded-full bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                      >
+                        <Calendar size={18} />
+                        Book
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* POPUP SLIDER */}
+        {isPopupOpen && (
+          <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 animate-slide-up-fade">
+            <div className="relative max-w-5xl w-full px-4 md:px-12 h-screen flex flex-col justify-center">
+              {/* Close Button */}
+              <button
+                onClick={closePopup}
+                className="absolute top-6 right-6 text-white/50 hover:text-white bg-white/10 p-3 rounded-full backdrop-blur-sm transition"
+              >
+                <X size={28} />
+              </button>
+
+              {/* Image */}
+              <div className="relative w-full h-[70vh] flex items-center justify-center">
+                <img
+                  src={selectedImages[currentIndex]}
+                  alt="Space"
+                  className="max-w-full max-h-full object-contain drop-shadow-2xl rounded-lg"
+                />
+              </div>
+
+              {/* Controls */}
+              {selectedImages.length > 1 && (
+                <>
+                  <button
+                    onClick={prevImage}
+                    className="absolute left-6 top-1/2 -translate-y-1/2 text-white/50 hover:text-white bg-white/10 p-4 rounded-full backdrop-blur-sm transition"
+                  >
+                    <ChevronLeft size={32} />
+                  </button>
+                  <button
+                    onClick={nextImage}
+                    className="absolute right-6 top-1/2 -translate-y-1/2 text-white/50 hover:text-white bg-white/10 p-4 rounded-full backdrop-blur-sm transition"
+                  >
+                    <ChevronRight size={32} />
+                  </button>
+                  <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/80 font-medium tracking-widest text-sm bg-black/50 px-4 py-2 rounded-full backdrop-blur-md">
+                    {currentIndex + 1} / {selectedImages.length}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Booking Modal */}
+        <BookingModal 
+          space={selectedSpace}
+          isOpen={isBookingModalOpen}
+          onClose={() => {
+            setIsBookingModalOpen(false);
+            setSelectedSpace(null);
+          }}
+        />
+      </div>
     </div>
   );
 }

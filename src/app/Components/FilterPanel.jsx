@@ -31,66 +31,63 @@ export default function FilterPanel({ filters, onFiltersChange, isOpen, onToggle
       {/* Filter Toggle Button */}
       <button
         onClick={onToggle}
-        className="fixed top-24 right-6 z-40 p-3 rounded-full bg-[#e0e5ec] shadow-[6px_6px_12px_#c2c8d0,_-6px_-6px_12px_#ffffff] hover:bg-[#d6dce4] transition"
+        className="fixed bottom-6 right-6 z-40 p-4 rounded-full bg-indigo-600 text-white shadow-lg hover:bg-indigo-700 hover:shadow-xl transition-all hover:-translate-y-1 block md:hidden"
       >
-        <Filter size={20} className="text-black" />
+        <Filter size={24} />
       </button>
 
       {/* Filter Panel */}
-      <div className={`fixed top-0 right-0 h-full w-80 bg-gradient-to-br from-blue-50 via-white to-purple-50 border-l border-gray-200 transform transition-transform duration-300 z-50 ${
+      <div className={`fixed top-0 right-0 h-full w-full md:w-80 lg:w-96 bg-white border-l border-gray-100 shadow-2xl transform transition-transform duration-300 z-50 ${
         isOpen ? "translate-x-0" : "translate-x-full"
       }`}>
-        <div className="p-6 h-full overflow-y-auto">
+        <div className="flex flex-col h-full bg-gray-50/50">
           {/* Header */}
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-gray-800 flex items-center">
-              <Filter className="mr-2" size={20} />
+          <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-white">
+            <h2 className="text-xl font-bold text-gray-900 flex items-center">
+              <Filter className="mr-2 text-indigo-500" size={20} />
               Filters
             </h2>
             <button
               onClick={onToggle}
-              className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-all duration-200"
+              className="p-2 rounded-full bg-gray-50 hover:bg-gray-100 transition-colors"
             >
-              <X size={18} className="text-gray-600" />
+              <X size={20} className="text-gray-500" />
             </button>
           </div>
 
-          <div className="space-y-6">
+          <div className="p-6 overflow-y-auto flex-1 space-y-8">
             {/* Search Term */}
-            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-4 rounded-xl border border-indigo-100">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                <Search className="inline mr-2 text-indigo-500" size={16} />
-                Search
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                <Search className="mr-2 text-gray-400" size={16} /> Search
               </label>
               <input
                 type="text"
                 value={localFilters.searchTerm}
                 onChange={(e) => handleChange("searchTerm", e.target.value)}
                 placeholder="Search by title or description..."
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all shadow-sm font-medium"
               />
             </div>
 
             {/* Location */}
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl border border-green-100">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                <MapPin className="inline mr-2 text-green-500" size={16} />
-                Location
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                <MapPin className="mr-2 text-gray-400" size={16} /> Location
               </label>
               <input
                 type="text"
                 value={localFilters.location}
                 onChange={(e) => handleChange("location", e.target.value)}
                 placeholder="Enter city or area..."
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all shadow-sm font-medium"
               />
             </div>
 
             {/* Price Range */}
-            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-4 rounded-xl border border-yellow-100">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                <DollarSign className="inline mr-2 text-yellow-500" size={16} />
-                Price Range (₹/day)
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                <DollarSign className="mr-2 text-gray-400" size={16} /> Price Range (₹)
               </label>
               <div className="grid grid-cols-2 gap-3">
                 <input
@@ -99,7 +96,7 @@ export default function FilterPanel({ filters, onFiltersChange, isOpen, onToggle
                   onChange={(e) => handleChange("minPrice", e.target.value)}
                   placeholder="Min"
                   min="0"
-                  className="px-3 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all shadow-sm font-medium"
                 />
                 <input
                   type="number"
@@ -107,98 +104,98 @@ export default function FilterPanel({ filters, onFiltersChange, isOpen, onToggle
                   onChange={(e) => handleChange("maxPrice", e.target.value)}
                   placeholder="Max"
                   min="0"
-                  className="px-3 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all shadow-sm font-medium"
                 />
               </div>
             </div>
 
             {/* Budget */}
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-100">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                💰 Your Budget (₹)
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2 flex justify-between items-center">
+                <span>Budget Limit</span>
+                <span className="text-xs font-normal text-gray-400">Highlights matches</span>
               </label>
-              <input
-                type="number"
-                value={localFilters.budget}
-                onChange={(e) => handleChange("budget", e.target.value)}
-                placeholder="Enter your total budget..."
-                min="0"
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              />
-              <p className="text-xs text-gray-600 mt-1">
-                Spaces within your budget will be highlighted
-              </p>
-            </div>
-
-            {/* Number of Beds */}
-            <div className="bg-gradient-to-r from-teal-50 to-cyan-50 p-4 rounded-xl border border-teal-100">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                <Bed className="inline mr-2 text-teal-500" size={16} />
-                Number of Beds
-              </label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="relative">
+                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                 <input
                   type="number"
-                  value={localFilters.minBeds}
-                  onChange={(e) => handleChange("minBeds", e.target.value)}
-                  placeholder="Min"
+                  value={localFilters.budget}
+                  onChange={(e) => handleChange("budget", e.target.value)}
+                  placeholder="Enter your maximum budget..."
                   min="0"
-                  className="px-3 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                />
-                <input
-                  type="number"
-                  value={localFilters.maxBeds}
-                  onChange={(e) => handleChange("maxBeds", e.target.value)}
-                  placeholder="Max"
-                  min="0"
-                  className="px-3 py-2 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all shadow-sm font-medium"
                 />
               </div>
             </div>
 
-            {/* Quick Budget Filters */}
-            <div className="bg-gradient-to-r from-rose-50 to-pink-50 p-4 rounded-xl border border-rose-100">
-              <label className="block text-sm font-semibold text-gray-700 mb-3">Quick Budget Filters</label>
-              <div className="grid grid-cols-2 gap-2">
+            {/* Number of Beds */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
+                <Bed className="mr-2 text-gray-400" size={16} /> Minimum Beds
+              </label>
+              <div className="flex gap-2">
+                {[1, 2, 3, 4, "5+"].map((num) => {
+                  const numStr = num.toString().replace('+','');
+                  const isSelected = localFilters.minBeds === numStr;
+                  return (
+                    <button
+                      key={num}
+                      onClick={() => handleChange("minBeds", isSelected ? "" : numStr)}
+                      className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
+                        isSelected 
+                          ? "bg-indigo-600 text-white shadow-md shadow-indigo-200" 
+                          : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+                      }`}
+                    >
+                      {num}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            
+            {/* Quick Price Filters */}
+            <div className="pt-4 border-t border-gray-100">
+              <label className="block text-sm font-semibold text-gray-700 mb-3">Quick Presets</label>
+              <div className="flex flex-wrap gap-2">
                 {[
-                  { label: "Under ₹500", value: "500" },
-                  { label: "₹500-1000", value: "1000" },
-                  { label: "₹1000-2000", value: "2000" },
-                  { label: "₹2000+", value: "2000+" }
-                ].map((option) => (
+                  { label: "Under ₹500", min: "0", max: "500" },
+                  { label: "₹500 - ₹1000", min: "500", max: "1000" },
+                  { label: "Luxury (₹2000+)", min: "2000", max: "" }
+                ].map((preset) => (
                   <button
-                    key={option.label}
+                    key={preset.label}
                     onClick={() => {
-                      if (option.value === "2000+") {
-                        handleChange("minPrice", "2000");
-                        handleChange("maxPrice", "");
-                      } else {
-                        const prevValue = option.label === "Under ₹500" ? "0" : 
-                                        option.label === "₹500-1000" ? "500" : "1000";
-                        handleChange("minPrice", prevValue);
-                        handleChange("maxPrice", option.value);
-                      }
+                      handleChange("minPrice", preset.min);
+                      handleChange("maxPrice", preset.max);
                     }}
-                    className="px-3 py-2 text-xs rounded-lg bg-white border border-gray-200 hover:bg-gray-50 transition-all duration-200 text-gray-700 font-medium shadow-sm hover:shadow-md"
+                    className="px-4 py-2 text-sm font-medium rounded-full bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-indigo-600 hover:border-indigo-200 transition-colors shadow-sm"
                   >
-                    {option.label}
+                    {preset.label}
                   </button>
                 ))}
               </div>
             </div>
-
+          </div>
+          
+          <div className="p-6 border-t border-gray-100 bg-white">
             {/* Clear Filters */}
             <button
               onClick={clearFilters}
-              className="w-full py-3 font-semibold rounded-xl bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-md hover:from-red-600 hover:to-pink-600 transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5"
+              className="w-full py-4 font-bold text-gray-700 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
             >
-              Clear All Filters
+              <X size={18} />
+              Clear Options
             </button>
           </div>
         </div>
       </div>
-
-      {/* Backdrop - Removed */}
+      
+      {/* Backdrop overlay for mobile when panel is open */}
+      <div 
+        className={`fixed inset-0 bg-black/40 backdrop-blur-sm z-40 transition-opacity duration-300 md:hidden ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        onClick={onToggle}
+      />
     </>
   );
 }
