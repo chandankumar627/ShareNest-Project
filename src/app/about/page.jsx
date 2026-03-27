@@ -175,7 +175,7 @@ export default function page() {
              Join ShareNest
           </a>
           <p className="mt-8 pt-6 border-t border-gray-100 text-xs text-gray-400 font-medium uppercase tracking-widest">
-            Made with ❤️ by Manish kr _manish_ku07 | ShareNest Platform
+            Made with ❤️ by Ayush Sharma | Chandan Kumar | Archita Mishra | ShareNest Platform
           </p>
         </div>
       </div>
@@ -218,4 +218,4 @@ function StepCard({ step, title, desc }) {
       <p className="text-gray-500 text-sm leading-relaxed">{desc}</p>
     </div>
   );
-}
+}

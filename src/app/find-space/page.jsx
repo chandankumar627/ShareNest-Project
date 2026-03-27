@@ -5,9 +5,9 @@ import { db, auth } from "../firebase";
 import { collection, getDocs, query, orderBy, where, doc, setDoc, deleteDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { X, ChevronLeft, ChevronRight, Calendar, MapPin, Star, Phone, ShieldCheck, Heart } from "lucide-react";
-import BookingModal from "../Components/BookingModal";
 import FilterPanel from "../Components/FilterPanel";
 import ImageSlider from "../Components/ImageSlider";
+import { useRouter } from "next/navigation";
 
 export default function FindSpacePage() {
   const [spaces, setSpaces] = useState([]);
@@ -15,8 +15,7 @@ export default function FindSpacePage() {
   const [selectedImages, setSelectedImages] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [selectedSpace, setSelectedSpace] = useState(null);
-  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const router = useRouter();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filters, setFilters] = useState({
     location: "",
@@ -138,8 +137,7 @@ export default function FindSpacePage() {
   };
 
   const handleBookSpace = (space) => {
-    setSelectedSpace(space);
-    setIsBookingModalOpen(true);
+    router.push(`/book-space/${space.id}`);
   };
 
   const isWithinBudget = (space) => {
@@ -320,7 +318,7 @@ export default function FindSpacePage() {
 
         {/* POPUP SLIDER */}
         {isPopupOpen && (
-          <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-50 animate-slide-up-fade">
+          <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center z-[100] animate-slide-up-fade">
             <div className="relative max-w-5xl w-full px-4 md:px-12 h-screen flex flex-col justify-center">
               {/* Close Button */}
               <button
@@ -363,15 +361,6 @@ export default function FindSpacePage() {
           </div>
         )}
 
-        {/* Booking Modal */}
-        <BookingModal 
-          space={selectedSpace}
-          isOpen={isBookingModalOpen}
-          onClose={() => {
-            setIsBookingModalOpen(false);
-            setSelectedSpace(null);
-          }}
-        />
       </div>
     </div>
   );

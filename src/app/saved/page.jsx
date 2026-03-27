@@ -5,7 +5,6 @@ import { db, auth } from "../firebase";
 import { collection, getDocs, query, where, doc, setDoc, deleteDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { X, ChevronLeft, ChevronRight, Calendar, MapPin, Phone, ShieldCheck, Heart, BookmarkX, Loader2 } from "lucide-react";
-import BookingModal from "../Components/BookingModal";
 import ImageSlider from "../Components/ImageSlider";
 import { useRouter } from "next/navigation";
 
@@ -20,9 +19,7 @@ export default function SavedSpacesPage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   
-  // Booking state
-  const [selectedSpace, setSelectedSpace] = useState(null);
-  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  
   const router = useRouter();
 
   useEffect(() => {
@@ -111,8 +108,7 @@ export default function SavedSpacesPage() {
   };
 
   const handleBookSpace = (space) => {
-    setSelectedSpace(space);
-    setIsBookingModalOpen(true);
+    router.push(`/book-space/${space.id}`);
   };
 
   return (
@@ -241,8 +237,6 @@ export default function SavedSpacesPage() {
           </div>
         )}
 
-        {/* Booking Modal */}
-        <BookingModal space={selectedSpace} isOpen={isBookingModalOpen} onClose={() => { setIsBookingModalOpen(false); setSelectedSpace(null); }} />
       </div>
     </div>
   );
